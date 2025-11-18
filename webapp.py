@@ -7,7 +7,7 @@ st.set_page_config(page_title="CHAT CON GOKU", page_icon="💥")
 
 # Título de la app
 
-ascii_art = r"""
+ascii_art_head = r"""
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣷⣶⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣷⡒⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿⣿⣿⣿⣆⠙⡄⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -48,7 +48,35 @@ ascii_art = r"""
              █▀█ █▄█ █▄▄ █▀█    ▄█ █▄█ ░█░   █▄█ █▄█ █░█ █▄█   
 """
 
-st.markdown(f"```\n{ascii_art}\n```")
+ascii_art_foot = r"""
+      ,
+(`-.-/(           .:::::.,
+ `-.__)             ``:\:: .               /7_.-,
+     '. -.       -  - `:::'           .- (  `_.=
+       \  `--._   /   _?'`      ___.-'   -`"'
+        \         -  / )----'''' -    .-'
+         `--..   `--' ,'           .-'
+              `\   --'       )---''
+                )           )
+                |          _|
+                (           \
+                 L          /
+                 |          \
+                 )__     _   \
+                  \ `---' `--'
+                   L         \
+                   |   \      \
+                    \   L     )
+                     L_ (      \
+                     |   \  .  J
+                     |    `.    \
+                  _.-`--='  \    )
+                 (   _-'     `--'\
+                  '"'        / ' J
+                            (,_./
+"""
+
+st.markdown(f"```\n{ascii_art_head}\n```")
 
 # Sidebar para configuración
 with st.sidebar:
@@ -165,22 +193,5 @@ if api_key_input:
         st.error("No se pudo configurar el cliente de Gemini. Verifica tu API key.")
 else:
     # Mensaje inicial cuando no hay API key
-    st.info("👈 Por favor, ingresa tu API Key de Gemini en el panel lateral para comenzar.")
-    st.markdown("""
-    ### ¿Cómo empezar?
-    
-    1. **Obtén tu API Key gratis:**
-       - Ve a [Google AI Studio](https://aistudio.google.com/app/apikey)
-       - Crea una API key (es gratis)
-    
-    2. **Ingresa la API Key:**
-       - Pégala en el campo del panel lateral 👈
-    
-    3. **¡Comienza a chatear!**
-       - Escribe cualquier pregunta en el chat
-    
-    ### Características:
-    - 🤖 Múltiples modelos de Gemini disponibles
-    - 💬 Historial de conversación
-    - 🔒 Tu API key se mantiene privada en tu navegador
-    """)
+    st.info("👈 ingresa API Key comenzar.")
+    st.markdown(f"```\n{ascii_art_foot}\n```")
