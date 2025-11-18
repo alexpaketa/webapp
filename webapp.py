@@ -80,7 +80,7 @@ st.markdown(f"```\n{ascii_art_head}\n```")
 
 # Sidebar para configuración
 with st.sidebar:
-    st.markdown("### 🔑API Key")
+    st.markdown("### 🔑🔑🔑🔑🔑")
     
     # Intentar cargar desde secrets primero
     default_key = ""
@@ -91,7 +91,7 @@ with st.sidebar:
     
     # Input para la API key
     api_key_input = st.text_input(
-        "tu API Key de Gemini",
+        "API Key Gemini",
         value=default_key,
         type="password",
         help="Consigue tu API key en https://aistudio.google.com/app/apikey"
@@ -193,5 +193,5 @@ if api_key_input:
         st.error("No se pudo configurar el cliente de Gemini. Verifica tu API key.")
 else:
     # Mensaje inicial cuando no hay API key
-    st.info("👈 ingresa API Key comenzar.")
+    st.info("👈 ingresa API Key hablar con Goku.")
     st.markdown(f"```\n{ascii_art_foot}\n```")
