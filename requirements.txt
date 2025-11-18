@@ -1,0 +1,6 @@
+pandas
+google-genai
+flask
+requests
+jsonify
+streamlit
