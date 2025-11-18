@@ -50,103 +50,137 @@ ascii_art = r"""
 
 st.markdown(f"```\n{ascii_art}\n```")
 
-# Configurar Gemini
-@st.cache_resource
-def configure_gemini():
-    try:
-        api_key = st.secrets["GEMINI_API_KEY"]
-        client = genai.Client(api_key=api_key)
-        
-        # Listar modelos disponibles para debugging
-        try:
-            models = client.models.list()
-            available_models = [m.name for m in models]
-            st.session_state.available_models = available_models
-        except:
-            st.session_state.available_models = []
-        
-        return client
-    except KeyError:
-        st.error("⚠️ No se encontró GEMINI_API_KEY en secrets.toml")
-        st.info("Crea el archivo .streamlit/secrets.toml con tu API key")
-        st.stop()
-    except Exception as e:
-        st.error(f"Error al configurar Gemini: {str(e)}")
-        st.stop()
-
-client = configure_gemini()
-
-# Inicializar el historial de chat en session_state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Mostrar historial de mensajes
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Input del usuario
-if prompt := st.chat_input("¡¡¡GOKUUUUUUUUU!!!"):
-    # Agregar mensaje del usuario al historial
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Mostrar mensaje del usuario
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    
-    # Obtener respuesta de Gemini
-    with st.chat_message("assistant"):
-        with st.spinner("Pensando..."):
-            try:
-                # Usar el modelo seleccionado
-                selected_model = st.session_state.get('model', 'models/gemini-2.5-flash')
-                
-                response = client.models.generate_content(
-                    model=selected_model,
-                    contents=prompt
-                )
-                response_text = response.text
-                st.markdown(response_text)
-                
-                # Agregar respuesta al historial
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": response_text
-                })
-            except Exception as e:
-                st.error(f"❌ Error con modelo '{selected_model}': {str(e)}")
-                st.info("💡 Intenta seleccionar otro modelo del sidebar")
-
-# Botón para limpiar el chat
-if st.sidebar.button("🗑️ Limpiar conversación"):
-    st.session_state.messages = []
-    st.rerun()
-
-# Información en el sidebar
+# Sidebar para configuración
 with st.sidebar:
-    st.markdown("---")
-    st.markdown(f"💬 Mensajes en la conversación: {len(st.session_state.messages)}")
+    st.markdown("### 🔑API Key")
     
-    # Selector de modelo
-    st.markdown("---")
-    st.markdown("### ⚙️ Configuración")
-        
-    # Usar los modelos que realmente están disponibles
-    model_options = {
-        "Gemini 2.5 Flash (Recomendado)": "models/gemini-2.5-flash",
-        "Gemini 2.5 Flash Lite": "models/gemini-2.5-flash-lite-preview-06-17",
-        "Gemini 2.5 Pro": "models/gemini-2.5-pro-preview-03-25",
-        "Gemini 2.5 Flash (Mayo)": "models/gemini-2.5-flash-preview-05-20"
-    }
+    # Intentar cargar desde secrets primero
+    default_key = ""
+    try:
+        default_key = st.secrets.get("GEMINI_API_KEY", "")
+    except:
+        pass
     
-    selected_display = st.selectbox(
-        "Modelo",
-        list(model_options.keys()),
-        key="model_display",
-        help="Gemini 2.5 Flash es el modelo más rápido y eficiente"
+    # Input para la API key
+    api_key_input = st.text_input(
+        "tu API Key de Gemini",
+        value=default_key,
+        type="password",
+        help="Consigue tu API key en https://aistudio.google.com/app/apikey"
     )
     
-    # Guardar el nombre real del modelo
-    if 'model' not in st.session_state or st.session_state.get('last_display') != selected_display:
-        st.session_state.model = model_options[selected_display]
-        st.session_state.last_display = selected_display
+    if api_key_input:
+        st.success("✅ API Key configurada")
+    else:
+        st.warning("⚠️ ingresa API Key para iniciar")
+
+# Configurar Gemini solo si hay API key
+if api_key_input:
+    @st.cache_resource
+    def configure_gemini(api_key):
+        try:
+            client = genai.Client(api_key=api_key)
+            
+            # Listar modelos disponibles
+            try:
+                models = client.models.list()
+                available_models = [m.name for m in models]
+                return client, available_models
+            except:
+                return client, []
+        except Exception as e:
+            st.error(f"Error al configurar Gemini: {str(e)}")
+            return None, []
+    
+    client, available_models = configure_gemini(api_key_input)
+    
+    if client:
+        # Sidebar - Configuración del modelo
+        with st.sidebar:
+            st.markdown("---")
+            st.markdown("### ⚙️ Configuración del Modelo")
+            
+            # Selector de modelo
+            model_options = {
+                "Gemini 2.5 Flash (Recomendado)": "models/gemini-2.5-flash",
+                "Gemini 2.5 Flash Lite": "models/gemini-2.5-flash-lite-preview-06-17",
+                "Gemini 2.5 Pro": "models/gemini-2.5-pro-preview-03-25",
+                "Gemini 2.5 Flash (Mayo)": "models/gemini-2.5-flash-preview-05-20"
+            }
+            
+            selected_display = st.selectbox(
+                "Selecciona el modelo",
+                list(model_options.keys()),
+                help="Gemini 2.5 Flash es el más rápido y eficiente"
+            )
+            
+            selected_model = model_options[selected_display]
+            
+            st.markdown("---")
+            st.markdown("### 💬 Conversación")
+            st.markdown(f"Mensajes: {len(st.session_state.get('messages', []))}")
+            
+            if st.button("🗑️ Limpiar conversación"):
+                st.session_state.messages = []
+                st.rerun()
+        
+        # Inicializar el historial de chat
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        
+        # Mostrar historial de mensajes
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        
+        # Input del usuario
+        if prompt := st.chat_input("¡¡¡¡GOKUUUUUU!!!"):
+            # Agregar mensaje del usuario al historial
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            
+            # Mostrar mensaje del usuario
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            # Obtener respuesta de Gemini
+            with st.chat_message("assistant"):
+                with st.spinner("Pensando..."):
+                    try:
+                        response = client.models.generate_content(
+                            model=selected_model,
+                            contents=prompt
+                        )
+                        response_text = response.text
+                        st.markdown(response_text)
+                        
+                        # Agregar respuesta al historial
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": response_text
+                        })
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)}")
+                        st.info("💡 Verifica tu API key o intenta con otro modelo")
+    else:
+        st.error("No se pudo configurar el cliente de Gemini. Verifica tu API key.")
+else:
+    # Mensaje inicial cuando no hay API key
+    st.info("👈 Por favor, ingresa tu API Key de Gemini en el panel lateral para comenzar.")
+    st.markdown("""
+    ### ¿Cómo empezar?
+    
+    1. **Obtén tu API Key gratis:**
+       - Ve a [Google AI Studio](https://aistudio.google.com/app/apikey)
+       - Crea una API key (es gratis)
+    
+    2. **Ingresa la API Key:**
+       - Pégala en el campo del panel lateral 👈
+    
+    3. **¡Comienza a chatear!**
+       - Escribe cualquier pregunta en el chat
+    
+    ### Características:
+    - 🤖 Múltiples modelos de Gemini disponibles
+    - 💬 Historial de conversación
+    - 🔒 Tu API key se mantiene privada en tu navegador
+    """)
